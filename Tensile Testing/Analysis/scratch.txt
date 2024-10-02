@@ -1,0 +1,32 @@
+main = plt.scatter(mystery_data['Extensometer Strain'].values * (10**6), mystery_data['Engineering Stress'].values / (10**6), s=5)
+plt.ylabel('Engineering Stress (MPa)')
+plt.xlabel('Extensometer Strain (microstrain)')
+
+tfs = plt.scatter(mystery_tfsne * (10**6), mystery_tfs / (10**6), marker='x')
+tfs.set_label('True Fracture Stress')
+tuts = plt.scatter(mystery_tutsn * (10**6), mystery_tuts / (10**6), marker='s')
+tuts.set_label('True Ultimate Tensile Stress')
+
+mid_true_stress = mystery_data['Engineering Stress'].iloc[1000] * (1 + mystery_data['Extensometer Strain'].iloc[1000]) # a random spot in the graph to help connect things
+mid_true_strain = np.log(1 + mystery_data['Extensometer Strain'].iloc[1000])
+mid = plt.scatter(mid_true_strain * (10**6), mid_true_stress / (10**6), marker='*')
+mid.set_label('True Stress-Strain Point')
+
+# yield point is approximately at 330 MPa
+yield_estimate = 330 * (10**6)
+yield_value = mystery_data['Engineering Stress'].iloc[np.searchsorted(mystery_data['Engineering Stress'], yield_estimate)]
+yield_index = mystery_data.loc[mystery_data['Engineering Stress'] == yield_value]
+yield_strain = yield_index['Extensometer Strain'].values[0]
+yieldpt = plt.scatter(yield_strain * (10**6), yield_value / (10**6), marker='D')
+yieldpt.set_label('Yield Stress')
+
+# creating an array to roughly imitate a true stress-strain curve
+x_points = np.array([0, yield_strain, mid_true_strain, mystery_tutsn, mystery_tfsne])
+y_points = np.array([0, yield_value, mid_true_stress, mystery_tuts, mystery_tfs])
+plt.plot(x_points * (10**6), y_points / (10**6), c=[0, 0, 0], label='True Stress-Strain "Curve"')
+
+plt.grid()
+plt.legend()
+plt.savefig('../Documents/figure6-mystery.png', dpi=300)
+# plt.show()
+plt.close()
